@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Calculate Time</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container mt-5">
+  <h1>Calculate Time</h1>
+
+  <!-- Timestamp Input Form -->
+  <form>
+    <div class="mb-3">
+      <label for="timestampInput" class="form-label">Enter Timestamps:</label>
+      <textarea class="form-control" id="timestampInput" placeholder="Enter timestamps here" rows="10" required></textarea>
+    </div>
+
+    <button type="button" class="btn btn-primary" onclick="calculateWorkingHoursAndBreak()">Calculate Time</button>
+
+    <!-- Display the result -->
+    <div class="mt-3">
+      <strong><p id="totalTime"></p></strong>
+    </div>
+    <div class="mt-3">
+      <strong><p id="totalWorkinghours"></p></strong>
+    </div>
+    <div class="mt-3">
+      <strong><p id="totalBreakTime"></p></strong>
+    </div>
+  </form>
+</div>
+
+<!-- Bootstrap JS and Popper.js (required for Bootstrap) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// Function to calculate total working hours and break taken
+function calculateWorkingHoursAndBreak() {
+  // Sample log entries
+  let logEntries = document.getElementById('timestampInput').value;
+  // Split the string based on the "Info" keyword
+  logEntries = logEntries.split('\n\nInfo');
+
+  // Remove any leading or trailing whitespace from each entry and filter out empty strings
+  let entries = logEntries.map(entry => entry.trim()).filter(entry => entry !== '');
+
+  let totalWorkingHours = 0;
+  let totalBreakTime = 0;
+
+  for (let i = 0; i < entries.length; i += 2) {
+    const checkInEntry = entries[i].split('\n');
+    const checkInTime = checkInEntry[0].trim(); // Extract check-in time
+
+    let checkOutEntry, checkOutTime;
+
+    if (i + 1 < entries.length) {
+      checkOutEntry = entries[i + 1].split('\n');
+      checkOutTime = checkOutEntry[0].trim(); // Extract check-out time
+    } else {
+      // If check-out entry is missing, assume current time as check-out time
+      const currentDateTime = new Date();
+      checkOutTime = `${currentDateTime.getHours().toString().padStart(2, '0')}:${currentDateTime.getMinutes().toString().padStart(2, '0')}:${currentDateTime.getSeconds().toString().padStart(2, '0')}`;
+    }
+
+    const currentDate = checkInEntry[2].trim();
+
+    // Combine date and time strings and use a 24-hour clock format
+    const checkInDateTime = new Date(`${currentDate} ${checkInTime.replace(/(am|pm)/, '')}`);
+    const checkOutDateTime = new Date(`${currentDate} ${checkOutTime.replace(/(am|pm)/, '')}`);
+
+    const timeDifference = (checkOutDateTime - checkInDateTime) / (1000 * 60); // in minutes
+
+    if (i + 1 < entries.length) {
+      // Add break time only if there is a corresponding check-out entry
+      const breakTime = (checkOutDateTime - checkInDateTime) / (1000 * 60);
+      totalBreakTime += breakTime;
+    }
+
+    totalWorkingHours += timeDifference;
+  }
+
+  // Convert totalWorkingHours and totalBreakTime to hours and minutes
+  const hoursWorked = Math.floor(totalWorkingHours / 60);
+  const minutesWorked = Math.floor(totalWorkingHours % 60);
+
+  const hoursBreak = Math.floor(totalBreakTime / 60);
+  const minutesBreak = Math.floor(totalBreakTime % 60);
+
+  // Convert totalWorkingHours and totalBreakTime to hours and minutes
+  const totalMinutes = Math.floor(totalWorkingHours + totalBreakTime);
+  const totalHours = Math.floor(totalMinutes / 60);
+  const remainingMinutes = totalMinutes % 60;
+
+  document.querySelector("#totalTime").innerText = `Total Time: ${totalHours} hours and ${remainingMinutes} minutes`;
+  document.querySelector("#totalWorkinghours").innerText = `Total Working Hours: ${hoursWorked} hours and ${minutesWorked} minutes`;
+  document.querySelector("#totalBreakTime").innerText = `Total Break Time: ${hoursBreak} hours and ${minutesBreak} minutes`;
+
+  return {
+    hoursWorked,
+    minutesWorked,
+    hoursBreak,
+    minutesBreak
+  };
+}
+
+
+</script>
+
+</body>
+</html>
