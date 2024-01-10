@@ -75,13 +75,32 @@ function calculateWorkingHoursAndBreak() {
 
     const timeDifference = (checkOutDateTime - checkInDateTime) / (1000 * 60); // in minutes
 
+    totalWorkingHours += timeDifference;
+  }
+
+  for (let i = 1; i < entries.length; i += 2) {
+    const checkOutEntry = entries[i].split('\n');
+    const checkOutTime = checkOutEntry[0].trim(); // Extract check-in time
+
+    let checkInEntry, checkInTime;
+
     if (i + 1 < entries.length) {
-      // Add break time only if there is a corresponding check-out entry
-      const breakTime = (checkOutDateTime - checkInDateTime) / (1000 * 60);
-      totalBreakTime += breakTime;
+      checkInEntry = entries[i + 1].split('\n');
+      checkInTime = checkInEntry[0].trim(); // Extract check-out time
     }
 
-    totalWorkingHours += timeDifference;
+    const currentDate = checkInEntry[2].trim();
+      if (checkInTime) {
+      // Combine date and time strings and use a 24-hour clock format
+      const checkOutDateTime = new Date(`${currentDate} ${checkOutTime.replace(/(am|pm)/, '')}`);
+      const checkInDateTime = new Date(`${currentDate} ${checkInTime.replace(/(am|pm)/, '')}`);
+
+      if (i + 1 < entries.length) {
+        // Add break time only if there is a corresponding check-out entry
+        const breakTime = (checkInDateTime - checkOutDateTime) / (1000 * 60);
+        totalBreakTime += breakTime;
+      }
+    }
   }
 
   // Convert totalWorkingHours and totalBreakTime to hours and minutes
